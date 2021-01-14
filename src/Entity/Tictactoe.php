@@ -60,61 +60,93 @@ class Tictactoe {
             $board = $state;
         }
 
-        $Xwin = 0;
-        $Owin = 0;
+          // Algorithme bidon
+        // Parcours une fois la board en entier
+        // Transforme les caractères en nombres pour faciliter les tests
+        // Les flagO* permettent notamment de signaler dans le trait (ligne, col, ou diago)
+        // Si oui, on sait que si sumO* est égal à boardSize ne signifie pas que X à gagner
+        //     mais que la somme des X et des O est égal par coincidence à boardsize
+        // Une fois cette précaution prise,
+        //     Si sum* = boardsize etant donné que X = 1, alors le trait est plein de X
+        //     Si sum* = boardsize * 2 étant donné que O = 2, alors le trait est plein de O 
+        // Si c'est 2 conditions ne sont pas présentes, alors on regarde si on à croiser un '.'
+        //     grâce au flagInprogress placé éventuellement à TRUE,
+        //     SI oui, on retourne donc "InProgress"
+        //     Sinon, pas de gagnant et c'est "Tie" !
+
+        // Compteur de combinaisons victorieuses
+        $Xwin = 0; //TODO
+        $Owin = 0; //TODO
+        // Flag de gestion des cas de retour
         $flagInProgress = false;
         $flagOrow = false;
         $flagOcol = array_fill (0, $boardSize, false);
         $flagOGD = false;
         $flagODG = false;
+        // Variables de vérification pour trouver un gagnant
         $sumdiaGD = 0;
         $sumdiaDG = 0;
-
         $sumcols = array_fill (0, $boardSize, 0);
         $sumrow = 0;
+
         for ($j=0; $j<$boardSize; $j++) {
-            $board[$j] = str_replace([".", "X", "O"], ["0","1","2"], $board[$j]);
             
             for ($i=0; $i<$boardSize; $i++) {
+    
+                // Mise en forme de la donnée en nombre
+                $case = match ($board[$j][$i]) {
+                    '.' => 0,
+                    'X' => 1,
+                    'O' => 2
+                };
                
-                $case = $board[$j][$i];
-               
-                if ( $case == 0) $flagInProgress = true;
-                else if ( $case == 2) {
-                    $flagOrow = true;
-                    $flagOcol[$i] = true;
+                // Levez les flags !
+                switch ($case) {
+                    case 0: $flagInProgress = true; break;
+                    case 2: $flagOrow       = true;
+                            $flagOcol[$i]   = true; break;
                 }
 
+                // Ligne et colonne
                 $sumcols[$i] += $case;
-                $sumrow += $case;
+                $sumrow      += $case;
                
+                // Si je suis sur la diagonale gauche droite
                 if ( $i == $j ) { 
-                    $sumdiaGD += $board[$j][$i];
+                    $sumdiaGD += $case;
                     if ($case == 2) $flagOGD=true;
                 }
+                // Si je suis sur la diagonale droite gauche
                 if ( $i == $boardSize -1 - $j ) {
-                    $sumdiaDG += $board[$j][$i];
+                    $sumdiaDG += $case;
                     if ($case == 2) $flagODG=true;
                 }
             }
-
+            
+            // On vérifie les gagnants sur les lignes
             if ($sumrow == $boardSize && ! $flagOrow) return "X";
             if ($sumrow == $boardSize * 2) return "O";
+            
             $sumrow = 0;
             $flagOrow = false;
         }
 
+        // On vérifie les gagnants sur les diagonales
         if ($sumdiaGD == $boardSize && ! $flagOGD) return 'X';
         if ($sumdiaDG == $boardSize && ! $flagODG) return "X";
         if ($sumdiaGD == $boardSize * 2) return 'O';
-        if ($sumdiaDG == $boardSize *2) return "O";
+        if ($sumdiaDG == $boardSize * 2) return "O";
 
+        // On vérifie les gagnants sur les colonnes
         for ($i=0; $i<$boardSize; $i++) {
             if ($sumcols[$i] == $boardSize &&  ! $flagOcol[$i]) return "X";
             if ($sumcols[$i] == $boardSize * 2) return "O";
         }
-// 
+ 
+        // Si pas de gagnants et qu'il reste des coups à jouer
         if ($flagInProgress) return "InProgress";
+
+        // Si pas de gagnant et que la board est pleine
         return "Tie";
     }
 }

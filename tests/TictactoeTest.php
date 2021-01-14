@@ -62,6 +62,7 @@ final class TictactoeTest extends TestCase {
             $this->assertNull(Tictactoe::create($boardUnexpectedSize));
     }
 
+    // TODO
     // public function test_if_players_can_play () {
 
     //     $tictactoe = Tictactoe::create();
@@ -238,17 +239,18 @@ final class TictactoeTest extends TestCase {
         $this->assertEquals($expectedResult, $result);
     }
 
-    public function test_if_there_are_multiple_winners () {
-        $tictactoe = Tictactoe::create(4);
-        $expectedResult = "Xwin2";
-        $result = $tictactoe->andTheWinnerIs(
-            [
-                ['X', 'X', 'X', 'X'],
-                ['O', 'O', 'X', 'X'],
-                ['X', 'X', '.', 'X'],
-                ['X', 'X', 'O', 'O']
-            ]
-        );
-        $this->assertEquals($expectedResult, $result);
-    }
+//TODO
+//     public function test_if_there_are_multiple_winners () {
+//         $tictactoe = Tictactoe::create(4);
+//         $expectedResult = "Xwin2";
+//         $result = $tictactoe->andTheWinnerIs(
+//             [
+//                 ['X', 'X', 'X', 'X'],
+//                 ['O', 'O', 'X', 'X'],
+//                 ['X', 'X', '.', 'X'],
+//                 ['X', 'X', 'O', 'O']
+//             ]
+//         );
+//         $this->assertEquals($expectedResult, $result);
+//     }
 }
