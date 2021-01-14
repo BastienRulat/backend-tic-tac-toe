@@ -1,0 +1,14 @@
+{
+    "name": "bastienrulat/backend-tic-tac-toe",
+    "description": "Gogaille -- Entretien technique pour developpeur backend",
+    "type": "project",
+    "license": "MIT",
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
