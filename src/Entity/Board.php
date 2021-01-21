@@ -2,39 +2,22 @@
 
 namespace App\Entity;
 
-use SplFixedArray;
+use App\Entity\CaseBoard;
+use ValueError;
 
 class Board {
 
-    private SplFixedArray $state;
-    private string $sstate;
-    private $size;
+    public array $state;
 
-    public function __construct(int $boardSize = 3) {
-        $this->state = new SplFixedArray($boardSize);
-        for ($i=0; $i<$boardSize; $i++) {
-            $this->state[$i] = new SplFixedArray($boardSize);
-        }
-        $this->sstate = str_pad('', $boardSize, '.', STR_PAD_RIGHT);
-        $this->size = $boardSize;
-    }
-
-    public function getState() {
-
-        return $this->state;
-    }
-
-    public function getSState() {
-        return $this->sstate;
-    }
-
-    public function setSState ($state) {
+    public function __construct(array $newStateBoard) {
         
-        $this->sstate = $state;
+        foreach ($newStateBoard as $i => $row)
+            foreach ($row as $case)
+                $this->state[$i][] = $case;
     }
-
-    public function getSize () {
-        
-        return $this->size;
+    
+    public function setState(CaseBoard $c)
+    {
+        $this->state[$c->row][$c->col] = $c;
     }
 }

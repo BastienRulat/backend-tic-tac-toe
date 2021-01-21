@@ -1,12 +1,12 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 use App\Entity\Player;
 use App\Entity\Tictactoe;
-use PHPUnit\Framework\TestCase;
 
 final class TictactoeTest extends TestCase {
 
-    public function test_if_I_can_handle_a_tictactoe_correct_instance() :void
+    public function test_if_I_can_handle_a_new_tictactoe_correct_instance() :void
     {
         $tictactoe = Tictactoe::create();
     
@@ -16,7 +16,7 @@ final class TictactoeTest extends TestCase {
         unset($tictactoe);
         error_log("TEST BOARD DEFAULT [OK]");
 
-        $boardExpectedSizes = [3, 5];
+        $boardExpectedSizes = [3, 5, 10, 20];
 
         foreach ($boardExpectedSizes as $boardExpectedSize)
         {
@@ -29,51 +29,107 @@ final class TictactoeTest extends TestCase {
         }
     }
 
+    public function createStringStateBoard (int $size = 3) {
+
+        foreach (range(0, $size-1) as $r)
+            foreach (range(0, $size-1) as $c) 
+                $virginStateBoard[$r][$c] = '.';
+        return $virginStateBoard;
+    }
+
     public function I_can_handle_a_correct_board (Tictactoe $tictactoe, int $boardExpectedSize) {
 
-        $boardExpectedState = new SplFixedArray($boardExpectedSize);
-        for ($i=0; $i<$boardExpectedSize; $i++) {
-            $boardExpectedState[$i] = new SplFixedArray($boardExpectedSize);
-        }
-        $boardExpectedSState = str_pad('', $boardExpectedSize, '.', STR_PAD_RIGHT);
+        foreach (range(0,$boardExpectedSize-1) as $r)
+            foreach (range(0,$boardExpectedSize-1) as $c) 
+                $boardExpectedState[$r][$c] = Tictactoe::createCaseBoard([$r, $c]);
 
-        $board = $tictactoe->getBoard();
-        $this->assertEquals($boardExpectedState, $board->getState());
-        $this->assertEquals($boardExpectedSState, $board->getSState());
+        $this->assertEquals($boardExpectedState, $tictactoe->board->state, "TAB ERREUR");
     }
 
     public function I_can_find_two_default_players (Tictactoe $tictactoe) {
 
-        $expectedPlayer1 = new Player (1, "Player 1", "X");
-        $expectedPlayer2 = new Player (2, "Player 2", "O"); 
+        $expectedPlayer1 = new Player (1, "Player 1", "X", $tictactoe);
+        $expectedPlayer2 = new Player (2, "Player 2", "O", $tictactoe); 
         $expectedPlayers[1] = $expectedPlayer1;
         $expectedPlayers[2] = $expectedPlayer2;
 
-        $players = $tictactoe->getPlayers();
-
-        $this->assertEquals($expectedPlayers, $players);
+        $this->assertEquals($expectedPlayers, $tictactoe->players);
     }
 
-    public function test_if_I_can_t_show_an_incorrect_board () {
+    public function test_if_I_can_t_show_an_incorrect_board_of_size_1 () {
 
-        $boardUnexpectedSizes = [2, -12, "toto", 3.5];
-        
-        foreach ($boardUnexpectedSizes as $boardUnexpectedSize)
-            $this->assertNull(Tictactoe::create($boardUnexpectedSize));
+        $this->expectException("UnexpectedValueException");
+        $t=Tictactoe::create(1);
     }
 
-    // TODO
-    // public function test_if_players_can_play () {
+    public function test_if_I_can_t_show_an_incorrect_board_of_size_neg_3 () {
 
-    //     $tictactoe = Tictactoe::create();
-    //     $player1 = $tictactoe->getPlayer1();
-    // }
+        $this->expectException("UnexpectedValueException");
+        $t=Tictactoe::create(-3);
+    }
+
+    public function test_if_I_can_t_show_an_incorrect_board_of_size_no_int () {
+
+        $this->expectException("UnexpectedValueException");
+        $t=Tictactoe::create("toto");
+    }
+
+   public function test_transformStringToStringStateBoard ()
+   {
+        $expectedStateBoard = [
+            ['X','X','X'],
+            ['X','O','X'],
+            ['X','X','X']
+        ];
+    
+        Tictactoe::create();
+        $board = Tictactoe::transformStringToStringStateBoard('XXXXOXXXX');
+
+        $this->assertEquals($expectedStateBoard, $board);
+   }
+
+   public function test_transformStringStateBoardToStateBoard () {
+
+        $expectedStateBoard = $this->createStringStateBoard();
+        $expectedStateBoard[1][1] = 'O';
+        $expectedStateBoard[1][2] = 'X';
+
+        $board = Tictactoe::transformStringStateBoardToStateBoard($expectedStateBoard);
+
+        $this->assertEquals($expectedStateBoard, $board);
+   }
+   
+    public function test_if_I_can_show_a_string_specified_board () {
+
+        $t=Tictactoe::create("XO.X2XXX0");
+        $expectedStateBoard = [
+            ['X','O','.'],
+            ['X','O','X'],
+            ['X','X','.']
+        ];
+        $this->assertEquals($expectedStateBoard, $t->board->state);
+    }
+
+    public function test_if_I_can_show_an_2dStringArray_specified_board () {
+
+        $t=Tictactoe::create( [
+            ['X','O','.'],
+            ['X','O','X'],
+            ['X','X','.']
+        ]);
+
+        $expectedStateBoard = [
+            ['X','O','.'],
+            ['X','O','X'],
+            ['X','X','.']
+        ];
+        $this->assertEquals($expectedStateBoard, $t->board->state);
+    }
 
     public function test_if_there_is_a_winner () {
  
         $tictactoe = Tictactoe::create();
-        $board = $tictactoe->getBoard();
-        $board->setSState("XXXOXOOOX");
+        $board = $tictactoe->board;
 
         $expectedResult = "X";
         $result = $tictactoe->andTheWinnerIs("XXXOXOOOX");
@@ -112,8 +168,6 @@ final class TictactoeTest extends TestCase {
             ]
         );
         $this->assertEquals($expectedResult, $result);
-
-        
     }
 
     function test_if_in_progress () {
@@ -232,14 +286,15 @@ final class TictactoeTest extends TestCase {
             [
                 ['O', 'X', 'O', 'X'],
                 ['O', 'O', 'X', 'X'],
-                ['X', 'X', '.', 'X'],
+                ['X', 'X', 'X', 'X'],
                 ['X', 'X', 'O', 'O']
             ]
         );
         $this->assertEquals($expectedResult, $result);
     }
 
-//TODO
+// }
+    //TODO
 //     public function test_if_there_are_multiple_winners () {
 //         $tictactoe = Tictactoe::create(4);
 //         $expectedResult = "Xwin2";
